@@ -63,5 +63,6 @@ typings/
 # Computer-generated files 
 .DS_Store
 
-# User-based generated json
+# User-based generated files
 appstate.json
+err.txt

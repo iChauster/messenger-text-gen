@@ -6,51 +6,62 @@ dotenv.config();
 
 var timestamp = undefined;
 
-function loginWithCredentials(usn, psw) {
+function loginWithCredentials(usn, psw, method) {
 	login({email:usn, password:psw}, (err, api) => {
 		if(err) return console.error(err);
 
 		fs.writeFileSync('appstate.json', JSON.stringify(api.getAppState()))
 
-		return api
+		return method(api);
 	});
 }
 
-function loginWithAppState(){
+function loginWithAppState(method){
 	login({
 		appState: JSON.parse(fs.readFileSync('appstate.json', 'utf8')),
 		}, (err,api) => {
 
 		if (err) return console.error(err)
 
-		return api;
+		return method(api)
 
 	});
 }
 
-function loadNextThreadHistory(api){
-    api.getThreadHistory(process.env.THREAD_ID, 50, timestamp, (err, history) => {
-        if(err) return console.error(err);
+function loadMessages(api, timestamp, amtRemaining, batchSize){
+	
+	if (amtRemaining <= 0) return;
+    
+    api.getThreadHistory(process.env.THREAD_ID, batchSize, timestamp, (err, history) => {
+        if(err) {
+        	let errString = `Amount of messages remaining: ${amtRemaining}. 
+        	\nMost recent timestamp: ${timestamp}\n
+        	Error from API: ${err}`
+        	console.error(errString)
+        	fs.writeFileSync('err.txt', errString);
+        }
 
-        /*
-            Since the timestamp is from a previous loaded message,
-            that message will be included in this history so we can discard it unless it is the first load.
-        */
         if(timestamp != undefined) history.pop();
 
-        /*
-            Handle message history
-        */
+        history.forEach( (message) => {
+        	if (message.type == "message"){
+        		fs.appendFile(`/data/${message.senderID}.txt`, message.body, (err) => {
+        			console.err(`Filesystem error: {err}`)
+        		})
+        	}
+        });
 
-        timestamp = history[0].timestamp;
+        latestTimestamp = history[history.length - 1]["timestamp"] 
 
-
-		console.log(history[0].timestamp)
-
-
+        // Might want some sort of sleep function here to avoid spam
+        
+		return loadMessages(api, latestTimestamp, amtRemaining - batchSize, 50)
     });
 
 }
-
-api = loginWithCredentials(process.env.USERNAME, process.env.PASSWORD);
-console.log(api)
+/*
+loginWithCredentials(process.env.USERNAME, process.env.PASSWORD, (api) => {
+	console.log(api)
+	loadMessages(api, null, 1000, 50)
+});
+*/

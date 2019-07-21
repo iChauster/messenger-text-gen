@@ -4,7 +4,7 @@
   "private": true,
   "scripts": {
     "start": "node app",
-    "clean": "rm appstate.json"
+    "clean": "rm appstate.json && rm err.txt"
   },
   "dependencies": {
     "dotenv": "^8.0.0",
