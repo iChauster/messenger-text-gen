@@ -1,5 +1,8 @@
 const login = require("facebook-chat-api");
 const fs = require("fs")
+const dotenv = require('dotenv');
+
+dotenv.config();
 
 var timestamp = undefined;
 
@@ -49,4 +52,5 @@ function loadNextThreadHistory(api){
 
 }
 
-// loginWithCredentials(process.env.USERNAME, process.env.PASSWORD);
+api = loginWithCredentials(process.env.USERNAME, process.env.PASSWORD);
+console.log(api)
