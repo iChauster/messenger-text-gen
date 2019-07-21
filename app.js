@@ -1,45 +1,52 @@
-var createError = require('http-errors');
-var express = require('express');
-var path = require('path');
-var cookieParser = require('cookie-parser');
-var logger = require('morgan');
+const login = require("facebook-chat-api");
+const fs = require("fs")
 
-var indexRouter = require('./routes/index');
-var usersRouter = require('./routes/users');
+var timestamp = undefined;
 
-var app = express();
+function loginWithCredentials(usn, psw) {
+	login({email:usn, password:psw}, (err, api) => {
+		if(err) return console.error(err);
 
-// view engine setup
-app.set('views', path.join(__dirname, 'views'));
-app.set('view engine', 'pug');
+		fs.writeFileSync('appstate.json', JSON.stringify(api.getAppState()))
 
-app.use(logger('dev'));
-app.use(express.json());
-app.use(express.urlencoded({ extended: false }));
-app.use(cookieParser());
-app.use(express.static(path.join(__dirname, 'public')));
+		return api
+	});
+}
 
-app.use('/', indexRouter);
-app.use('/users', usersRouter);
+function loginWithAppState(){
+	login({
+		appState: JSON.parse(fs.readFileSync('appstate.json', 'utf8')),
+		}, (err,api) => {
 
-// catch 404 and forward to error handler
-app.use(function(req, res, next) {
-  next(createError(404));
-});
+		if (err) return console.error(err)
 
-// error handler
-app.use(function(err, req, res, next) {
-  // set locals, only providing error in development
-  res.locals.message = err.message;
-  res.locals.error = req.app.get('env') === 'development' ? err : {};
+		return api;
 
-  // render the error page
-  res.status(err.status || 500);
-  res.render('error');
-});
+	});
+}
 
-app.listen(process.env.PORT || 6969, () => {
-	console.log("ThotIndex on port 6969");
-})
+function loadNextThreadHistory(api){
+    api.getThreadHistory(process.env.THREAD_ID, 50, timestamp, (err, history) => {
+        if(err) return console.error(err);
 
-module.exports = app;
+        /*
+            Since the timestamp is from a previous loaded message,
+            that message will be included in this history so we can discard it unless it is the first load.
+        */
+        if(timestamp != undefined) history.pop();
+
+        /*
+            Handle message history
+        */
+
+        timestamp = history[0].timestamp;
+
+
+		console.log(history[0].timestamp)
+
+
+    });
+
+}
+
+// loginWithCredentials(process.env.USERNAME, process.env.PASSWORD);
