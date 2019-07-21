@@ -60,4 +60,8 @@ typings/
 # next.js build output
 .next
 
+# Computer-generated files 
 .DS_Store
+
+# User-based generated json
+appstate.json
