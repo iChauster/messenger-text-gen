@@ -5,35 +5,19 @@ const fs = require("fs")
 
 var timestamp = undefined;
 
-var everything = {
 
-}
-
-/* GET home page. */
-router.get('/', function(req, res, next) {
-  res.render('index', { title: 'Express' });
-});
-
-router.get('/getMessages', function(req,res,next){
-
-	login(/*{appState: JSON.parse(fs.readFileSync('appstate.json', 'utf8'))}*/{email: "6099178864", password: "function(){};"}, (err, api) => {
+login({appState: JSON.parse(fs.readFileSync('appstate.json', 'utf8'))}/*{email: "pubjee1@gmail.com", password: "asdf5608"}*/, (err, api) => {
     if(err) return console.error(err);
 
-    	loadNextThreadHistory(api, res);
+    	loadNextThreadHistory(api);
 
     	fs.writeFileSync('appstate.json', JSON.stringify(api.getAppState()));
 
-    	res.setHeader('Content-Type', 'application/json');
-		res.status(200).json(JSON.stringify(everything))
+
+});
 
 
-	});
-
-	//res.send("hello")
-
-})
-
-function loadNextThreadHistory(api, res){
+function loadNextThreadHistory(api){
     api.getThreadHistory("1684465761646373", 50, timestamp, (err, history) => {
         if(err) return console.error(err);
 
@@ -52,9 +36,8 @@ function loadNextThreadHistory(api, res){
 
         timestamp = history[0].timestamp;
 
-        everything = { history }
 
-		console.log(everything)
+		console.log(history[0].timestamp)
 
 		
 
