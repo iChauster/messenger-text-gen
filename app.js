@@ -5,8 +5,6 @@ const chalk = require('chalk')
 
 dotenv.config();
 
-var timestamp = undefined;
-
 function loginWithCredentials(usn, psw, method) {
 	login({email:usn, password:psw}, (err, api) => {
 		if(err) return console.error(err);
@@ -34,11 +32,11 @@ function loadMessages(api, timestamp, amtRemaining, batchSize){
 	if (amtRemaining <= 0) return;
     
     api.getThreadHistory(process.env.THREAD_ID, batchSize, timestamp, (err, history) => {
+    	console.log(history)
     	console.log(chalk`travelling to {yellow.italic ${timestamp}} time`)
     	console.log(chalk`fetching {bold.green ${batchSize}} messages`)
         if(err) {
-        	let errString = `Amount of messages remaining: ${amtRemaining}. 
-        	\nMost recent timestamp: ${timestamp}\nError from API: ${err}.`
+        	let errString = `Amount of messages remaining: ${amtRemaining}.\nMost recent timestamp: ${timestamp}\nError from API: ${err}.`
         	console.error(errString)
         	fs.writeFileSync('err.txt', errString);
         	return;
@@ -50,10 +48,12 @@ function loadMessages(api, timestamp, amtRemaining, batchSize){
 
         history.forEach( (message) => {
         	if (message.type == "message"){
+        		/*
         		fs.appendFile(`./data/${message.senderID}.txt`, `\n${message.body}`, (err) => {
         			if(err) console.error(chalk.red(`Filesystem error: ${err}`))
         			return;
         		})
+        		*/
         	}
         });
 
@@ -66,8 +66,8 @@ function loadMessages(api, timestamp, amtRemaining, batchSize){
 
 }
 
-loginWithAppState((api) => {
+loginWithCredentials((api) => {
 	console.log(api)
-	loadMessages(api, 1563542042208, 450, 50)
+	loadMessages(api, timestamp=null, amtRemaining=50, batchSize=50)
 });
 
