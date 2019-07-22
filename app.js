@@ -1,7 +1,7 @@
-
 const login = require("facebook-chat-api");
 const fs = require("fs")
 const dotenv = require('dotenv');
+const chalk = require('chalk')
 
 dotenv.config();
 
@@ -34,13 +34,14 @@ function loadMessages(api, timestamp, amtRemaining, batchSize){
 	if (amtRemaining <= 0) return;
     
     api.getThreadHistory(process.env.THREAD_ID, batchSize, timestamp, (err, history) => {
-    	console.log(chalk`fetching {bold green ${batchSize}} messages`)
+    	console.log(chalk`travelling to {yellow.italic ${timestamp}} time`)
+    	console.log(chalk`fetching {bold.green ${batchSize}} messages`)
         if(err) {
         	let errString = `Amount of messages remaining: ${amtRemaining}. 
-        	\nMost recent timestamp: ${timestamp}\n
-        	Error from API: ${err}`
+        	\nMost recent timestamp: ${timestamp}\nError from API: ${err}.`
         	console.error(errString)
         	fs.writeFileSync('err.txt', errString);
+        	return;
         }
 
         console.log(chalk.green.bold(`Successfully loaded ${batchSize} messages!`))
@@ -49,22 +50,30 @@ function loadMessages(api, timestamp, amtRemaining, batchSize){
 
         history.forEach( (message) => {
         	if (message.type == "message"){
-        		fs.writeFile(`/data/${message.senderID}.txt`, message.body, (err) => {
-        			console.err(chalk.red(`Filesystem error: ${err}`))
-        		})
+        		if(message.body != '' && message.body.includes('http') == false){
+	        		fs.appendFile(`./data/${message.senderID}.txt`, `\n${message.body}`, (err) => {
+	        			if(err) console.error(chalk.red(`Filesystem error: ${err}`))
+	        			return;
+	        		})
+        		}
         	}
         });
 
-        latestTimestamp = history[history.length - 1]["timestamp"] 
+        latestTimestamp = history[0]["timestamp"] 
 
         // Sleep to avoid spam
 
-		return setTimeout(loadMessages(api, latestTimestamp, amtRemaining - batchSize, 50), 5000);
+		return setTimeout(loadMessages, 5000, api, latestTimestamp, amtRemaining - batchSize, batchSize);
     });
 
 }
 
-loginWithCredentials(process.env.USERNAME, process.env.PASSWORD, (api) => {
+
+
+
+loginWithAppState((api) => {
 	console.log(api)
-	loadMessages(api, null, 1000, 50)
+	loadMessages(api, 1563542042208, 450, 50)
 });
+
+
