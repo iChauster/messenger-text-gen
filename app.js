@@ -56,9 +56,9 @@ function loadMessages(api, timestamp, amtRemaining, batchSize){
 
         latestTimestamp = history[history.length - 1]["timestamp"] 
 
-        // Might want some sort of sleep function here to avoid spam
+        // Sleep to avoid spam
 
-		return loadMessages(api, latestTimestamp, amtRemaining - batchSize, 50)
+		return setTimeout(loadMessages(api, latestTimestamp, amtRemaining - batchSize, 50), 5000);
     });
 
 }
