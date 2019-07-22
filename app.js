@@ -12,6 +12,8 @@ function loginWithCredentials(usn, psw) {
 
 		fs.writeFileSync('appstate.json', JSON.stringify(api.getAppState()))
 
+		loadNextThreadHistory(api)
+
 		return api
 	});
 }
@@ -23,7 +25,8 @@ function loginWithAppState(){
 
 		if (err) return console.error(err)
 
-		return api;
+		loadNextThreadHistory(api)
+
 
 	});
 }
@@ -52,5 +55,6 @@ function loadNextThreadHistory(api){
 
 }
 
-api = loginWithCredentials(process.env.USERNAME, process.env.PASSWORD);
+api = loginWithAppState()
+
 console.log(api)
