@@ -48,12 +48,13 @@ function loadMessages(api, timestamp, amtRemaining, batchSize){
 
         history.forEach( (message) => {
         	if (message.type == "message"){
-        		/*
-        		fs.appendFile(`./data/${message.senderID}.txt`, `\n${message.body}`, (err) => {
-        			if(err) console.error(chalk.red(`Filesystem error: ${err}`))
-        			return;
-        		})
-        		*/
+        		if(message.body != '' || message.body.includes('http') == false){
+	        		fs.appendFile(`./data/${message.senderID}.txt`, `\n${message.body}`, (err) => {
+	        			if(err) console.error(chalk.red(`Filesystem error: ${err}`))
+	        			return;
+	        		})
+        		}
+
         	}
         });
 
@@ -66,8 +67,15 @@ function loadMessages(api, timestamp, amtRemaining, batchSize){
 
 }
 
+
+
+
+
+
 loginWithCredentials((api) => {
+
 	console.log(api)
 	loadMessages(api, timestamp=null, amtRemaining=50, batchSize=50)
 });
+
 
