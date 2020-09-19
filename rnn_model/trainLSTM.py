@@ -7,7 +7,7 @@ def buildModel():
 	model = Sequential()
 	model.add(LSTM(128, input_shape=(maxlen, len(chars))))
 	model.add(Dense(len(chars)))
-	model.add(Activation('softmax'))
+	model.add(Activation('softmax')) # Not classification, refine output.
 	optimizer = RMSprop(lr=0.01)
 	model.compile(loss='categorical_crossentropy', optimizer=optimizer)
 
